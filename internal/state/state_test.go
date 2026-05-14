@@ -1,6 +1,7 @@
 package state
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -9,10 +10,22 @@ import (
 
 func newTok(id string) token.Token {
 	return token.Token{
-		Agent:     token.AgentCodex,
-		PID:       123,
+		Agent:     token.AgentClaudeCode,
+		PID:       1,
 		SessionID: id,
-		StartedAt: time.Unix(100, 0).UTC(),
+		StartedAt: time.Now().UTC(),
+	}
+}
+
+func TestListTokensMissingStoreReturnsNil(t *testing.T) {
+	s := New(t.TempDir())
+
+	toks, err := s.ListTokens()
+	if err != nil {
+		t.Fatalf("ListTokens missing store: %v", err)
+	}
+	if toks != nil {
+		t.Fatalf("ListTokens missing store = %#v, want nil", toks)
 	}
 }
 
@@ -47,6 +60,36 @@ func TestWriteListRemoveToken(t *testing.T) {
 	}
 	if len(toks) != 1 || toks[0].SessionID != "s2" {
 		t.Fatalf("remaining tokens = %#v, want only s2", toks)
+	}
+}
+
+func TestWriteTokenRejectsUnsafeSessionID(t *testing.T) {
+	s := New(t.TempDir())
+
+	if err := s.WriteToken(newTok("../we-enabled")); err == nil {
+		t.Fatalf("WriteToken unsafe session ID: got nil error, want error")
+	}
+}
+
+func TestRemoveTokenRejectsEmptySessionID(t *testing.T) {
+	s := New(t.TempDir())
+	if err := s.ensureDirs(); err != nil {
+		t.Fatalf("ensureDirs: %v", err)
+	}
+
+	if err := s.RemoveToken(""); err == nil {
+		t.Fatalf("RemoveToken empty session ID: got nil error, want error")
+	}
+	if _, err := os.Stat(s.sessionsDir()); err != nil {
+		t.Fatalf("sessions dir after RemoveToken empty = %v, want existing dir", err)
+	}
+}
+
+func TestWriteRawRejectsUnsafeSessionID(t *testing.T) {
+	s := New(t.TempDir())
+
+	if err := s.writeRaw("../escape", []byte("{}")); err == nil {
+		t.Fatalf("writeRaw unsafe session ID: got nil error, want error")
 	}
 }
 
@@ -99,7 +142,12 @@ func TestLockSerializes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Lock: %v", err)
 	}
-	defer unlock()
+	firstLocked := true
+	defer func() {
+		if firstLocked {
+			unlock()
+		}
+	}()
 
 	acquired := make(chan func(), 1)
 	errs := make(chan error, 1)
@@ -122,6 +170,7 @@ func TestLockSerializes(t *testing.T) {
 	}
 
 	unlock()
+	firstLocked = false
 
 	select {
 	case err := <-errs:
