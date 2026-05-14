@@ -49,7 +49,7 @@ func renderStatus(st *state.Store, w io.Writer, facts statusFacts) int {
 	now := time.Now()
 	for _, tk := range tokens {
 		dur := now.Sub(tk.StartedAt).Round(time.Second)
-		fmt.Fprintf(w, "  %-12s pid %-7d running %s\n", tk.Agent, tk.PID, dur)
+		fmt.Fprintf(w, "  %-12s pid %-7d running %-10s %s\n", tk.Agent, tk.PID, dur, tk.SessionID)
 	}
 
 	sleepState := "OFF"
