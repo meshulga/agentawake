@@ -46,6 +46,8 @@ func Main(args []string) int {
 		return cmdRelease(args[1:])
 	case "reconcile":
 		return cmdReconcile(args[1:])
+	case "status":
+		return cmdStatus(args[1:])
 	default:
 		fmt.Fprintf(os.Stderr, "agentawake: unknown command %q\n\n%s", args[0], usage)
 		return 1
