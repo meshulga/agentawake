@@ -41,6 +41,3 @@ dist/
 
 # --- Logs ---
 *.log
-
-# --- Superpowers working docs (local only) ---
-docs/superpowers/
