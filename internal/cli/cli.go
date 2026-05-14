@@ -4,6 +4,9 @@ package cli
 import (
 	"fmt"
 	"os"
+
+	"github.com/hok/agentawake/internal/logging"
+	"github.com/hok/agentawake/internal/state"
 )
 
 // Version is overridden at build time via -ldflags.
@@ -37,8 +40,20 @@ func Main(args []string) int {
 	case "help", "--help", "-h":
 		fmt.Print(usage)
 		return 0
+	case "acquire":
+		return cmdAcquire(args[1:])
 	default:
 		fmt.Fprintf(os.Stderr, "agentawake: unknown command %q\n\n%s", args[0], usage)
 		return 1
 	}
+}
+
+// stores builds the default Store and Logger. Used by every command.
+func stores() (*state.Store, *logging.Logger, error) {
+	base, err := state.DefaultBase()
+	if err != nil {
+		return nil, nil, err
+	}
+	st := state.New(base)
+	return st, logging.New(st.LogPath()), nil
 }
