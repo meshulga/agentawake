@@ -1,1 +1,46 @@
+# --- Go build output ---
+# Compiled binaries produced by `go build` at the repo root
+/agentawake
+/agentawake-pmset
+# Generic Go artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+# Test binary, built by `go test -c`
+*.test
+# Coverage output
+*.out
+coverage.html
+*.cover
+*.prof
+# Go workspace files (machine-local)
+go.work
+go.work.sum
+
+# --- goreleaser ---
+dist/
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# --- Editors / IDEs ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Local env / secrets ---
+.env
+.env.local
+*.local
+
+# --- Logs ---
+*.log
+
+# --- Superpowers working docs (local only) ---
 docs/superpowers/
